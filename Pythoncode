@@ -1,0 +1,76 @@
+import hashlib
+import json
+
+# -------- Hashing --------
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+# -------- Database Handling --------
+def load_db():
+    try:
+        with open("user_db.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+def save_db(user_db):
+    with open("user_db.json", "w", encoding="utf-8") as f:
+        json.dump(user_db, f, indent=4)
+
+
+# -------- Login functions --------
+
+def register_user(user_db):
+    username = input("Enter a username: ")
+    if username in user_db:
+        print("Username already exists!")
+        return
+    
+    password = input("Enter a password: ")
+    user_db[username] = hash_password(password)
+    print("User registered successfully!")
+    save_db(user_db)
+
+def login_user(user_db):
+    username = input("Enter your username: ")
+    password = input("Enter your password: ")
+    
+    hashed_password = hash_password(password)
+    
+    if username in user_db and user_db[username] == hashed_password:
+        print("Login successful!")
+        return True
+    else:
+        print("Invalid username or password!")
+        return False
+
+
+# -------- Main Loop --------
+def loginloop():
+    user_db = load_db()
+    
+    while True:
+        print("Welcome to SecChat, what would you like to do?")
+        print("1. Login")
+        print("2. Register")
+        print("3. Exit")
+        
+        choice = input("> ")
+        
+        if choice == "1":
+            if login_user(user_db):
+                break
+            
+        elif choice == "2":
+            register_user(user_db)
+            
+        elif choice == "3":
+            print("Goodbye!")
+            exit()
+            
+        else:
+            print("Invalid Option, Please select a number!")
+            
+
+loginloop()
